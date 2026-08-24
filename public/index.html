@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Mottu | Descubra o seu plano ideal</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <button class="back-btn" id="btn-voltar-topo" hidden aria-label="Voltar">‹ Voltar</button>
+      <span class="logo">MOTTU</span>
+      <div class="progress" id="progress" hidden>
+        <span class="dot" data-dot="q1"></span>
+        <span class="dot" data-dot="q2"></span>
+        <span class="dot" data-dot="q3"></span>
+      </div>
+    </header>
+
+    <main class="card">
+
+      <section class="step" data-step="home">
+        <div class="hero-icon" aria-hidden="true">🛵</div>
+        <h1>Descubra o plano ideal para a sua <span class="accent">rotina de entregas</span></h1>
+        <h2>Veja como é simples:</h2>
+		<ul class="checklist">
+          <li><span class="check">1</span> Responda a 3 perguntas sobre quanto e onde você roda.</li>
+          <li><span class="check">2</span> Veja o plano e o custo semanal ideal para o seu perfil.</li>
+          <li><span class="check">3</span> Decida se quer avançar — sem pressão ou obrigações.</li>
+        </ul>
+        <button class="btn-primary" id="btn-comecar">Começar simulação</button>
+        <!-- <button class="btn-link" id="btn-como-funciona" aria-expanded="false">Como funciona?</button>
+        <div class="info-box hidden" id="como-funciona-box">
+          <p><strong>1.</strong> Responda 3 perguntas sobre sua rotina.</p>
+          <p><strong>2.</strong> Calculamos o plano e o custo semanal ideal para você.</p>
+          <p><strong>3.</strong> Se fizer sentido, você contrata direto com a Mottu — sem compromisso.</p>
+        </div> -->
+      </section>
+
+      <section class="step" data-step="q1" hidden>
+        <p class="step-label">Pergunta 1 de 3</p>
+        <h2>Quantos dias por semana você pretende rodar?</h2>
+        <div class="options" id="opcoes-dias"></div>
+        <button class="btn-primary" id="btn-continuar-q1" disabled>Continuar</button>
+      </section>
+
+      <section class="step" data-step="q2" hidden>
+        <p class="step-label">Pergunta 2 de 3</p>
+        <h2>Qual a distância média percorrida por dia?</h2>
+        <div class="options" id="opcoes-km"></div>
+        <button class="btn-primary" id="btn-continuar-q2" disabled>Continuar</button>
+      </section>
+
+      <section class="step" data-step="q3" hidden>
+        <p class="step-label">Pergunta 3 de 3</p>
+        <h2>O que você precisa incluir no plano?</h2>
+        <div class="options" id="opcoes-protecao"></div>
+        <button class="btn-primary" id="btn-ver-resultado" disabled>Ver resultado</button>
+      </section>
+
+      <section class="step" data-step="resultado" hidden>
+        <p class="step-label">Seu plano recomendado</p>
+        <h2 id="plano-nome">Mottu Flex</h2>
+        <p class="subtitle">Por que este plano</p>
+        <ul class="checklist" id="beneficios"></ul>
+
+        <div class="price-card">
+          <p class="price-label">Estimativa de custo semanal</p>
+          <p class="price-destaque"><strong id="preco-estimado">R$ 0,00</strong><span>estimado</span></p>
+          <div class="price-track">
+            <div class="price-handle" id="price-handle"></div>
+          </div>
+          <div class="price-range">
+            <span><strong id="preco-min">R$ 0,00</strong> mínimo</span>
+            <span><strong id="preco-max">R$ 0,00</strong> máximo</span>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-contratar">Garantir meu plano</button>
+        <!-- <button class="btn-outline" id="btn-refazer">Refazer simulação</button> -->
+		<button class="btn-outline" id="btn-simular-novamente">Simular novamente</button>
+		<!-- <button class="back-btn" id="btn-voltar" hidden aria-label="Voltar">‹ Voltar</button> -->
+      </section>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

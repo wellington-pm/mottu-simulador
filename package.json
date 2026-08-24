@@ -1,0 +1,14 @@
+{
+  "name": "mottu-simulador",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simulador de plano ideal Mottu - landing page responsiva com registro de respostas em banco de dados",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
