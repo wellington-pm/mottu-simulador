@@ -2,13 +2,14 @@
   "name": "mottu-simulador",
   "version": "1.0.0",
   "private": true,
-  "description": "Simulador de plano ideal Mottu - landing page responsiva com registro de respostas em banco de dados",
-  "main": "server.js",
+  "description": "Simulador de plano ideal Mottu - landing page responsiva com registro de respostas via Netlify Functions + Blobs",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "netlify dev"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "@netlify/blobs": "^8.1.0"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.38.0"
   }
 }
