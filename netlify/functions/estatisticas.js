@@ -26,11 +26,23 @@ exports.handler = async (event) => {
     const { blobs } = await store.list();
     const registros = await Promise.all(blobs.map((b) => store.get(b.key, { type: 'json' })));
 
+    const storeComp = getStore('compartilhamentos');
+    const { blobs: blobsComp } = await storeComp.list();
+    const compartilhamentos = await Promise.all(blobsComp.map((b) => storeComp.get(b.key, { type: 'json' })));
+    const indicadas = registros.filter((r) => r.origem && r.origem.ref);
+
     return json(200, {
       total: registros.length,
       convertidos: registros.filter((r) => r.convertido).length,
       porDias: contarPor(registros, 'dias'),
       porKm: contarPor(registros, 'km'),
+      porProtecao: contarPor(registros, 'protecao'),
+      compartilhamento: {
+        compartilhamentos: compartilhamentos.length,
+        visitas: compartilhamentos.reduce((soma, c) => soma + (c.visitas || 0), 0),
+        simulacoesIndicadas: indicadas.length,
+        conversoesIndicadas: indicadas.filter((r) => r.convertido).length,
+      },
     });
   } catch (err) {
     console.error(err);

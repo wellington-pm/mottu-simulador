@@ -19,6 +19,16 @@
   status = 200
 
 [[redirects]]
+  from = "/api/compartilhamentos/:ref/visita"
+  to = "/.netlify/functions/compartilhamentos?ref=:ref&acao=visita"
+  status = 200
+
+[[redirects]]
+  from = "/api/compartilhamentos"
+  to = "/.netlify/functions/compartilhamentos"
+  status = 200
+
+[[redirects]]
   from = "/api/estatisticas"
   to = "/.netlify/functions/estatisticas"
   status = 200

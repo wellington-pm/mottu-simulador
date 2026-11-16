@@ -3,6 +3,19 @@ const { getStore } = require('@netlify/blobs');
 const { DIAS_VALIDOS, KM_VALIDOS, PROTECAO_VALIDA, calcularPreco } = require('./lib/pricing');
 
 const ADMIN_KEY = process.env.ADMIN_KEY || 'mottu-admin';
+const REF_REGEX = /^[a-z0-9]{6,16}$/;
+const texto = (v) => (typeof v === 'string' && v.length > 0 ? v.slice(0, 64) : null);
+
+function normalizarOrigem(origem) {
+  if (!origem || typeof origem !== 'object' || !REF_REGEX.test(origem.ref || '')) return null;
+  return {
+    ref: origem.ref,
+    utmSource: texto(origem.utmSource),
+    utmMedium: texto(origem.utmMedium),
+    utmCampaign: texto(origem.utmCampaign),
+  };
+}
+
 const json = (statusCode, data) => ({
   statusCode,
   headers: { 'Content-Type': 'application/json' },
@@ -39,6 +52,7 @@ exports.handler = async (event) => {
         precoEstimado: preco.precoEstimado,
         precoMax: preco.precoMax,
         convertido: false,
+        origem: normalizarOrigem(body.origem),
         criadoEm: new Date().toISOString(),
         atualizadoEm: null,
       });

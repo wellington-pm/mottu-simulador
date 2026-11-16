@@ -1,5 +1,11 @@
 (function () {
   const MOTTU_URL = 'https://mottu.com.br/aluguel';
+  const REF_REGEX = /^[a-z0-9]{6,16}$/;
+  const UTM_COMPARTILHAMENTO = {
+    utm_source: 'whatsapp',
+    utm_medium: 'compartilhamento',
+    utm_campaign: 'resultado_simulacao',
+  };
 
   const DIAS = [
     { value: '1-2', label: '1 a 2 dias' },
@@ -56,7 +62,53 @@
     sessionId: getSessionId(),
     respostaId: null,
     precos: null,
+    origem: capturarOrigem(),
+    refCompartilhamento: null,
   };
+
+  // Quem chega por um link compartilhado: guarda ref + UTMs na sessão,
+  // registra a visita (1x por sessão) e limpa a URL para não repassar o ref de outra pessoa.
+  function capturarOrigem() {
+    const params = new URLSearchParams(window.location.search);
+    const ref = (params.get('ref') || '').toLowerCase();
+    if (REF_REGEX.test(ref)) {
+      const origem = {
+        ref,
+        utmSource: (params.get('utm_source') || '').slice(0, 64) || null,
+        utmMedium: (params.get('utm_medium') || '').slice(0, 64) || null,
+        utmCampaign: (params.get('utm_campaign') || '').slice(0, 64) || null,
+      };
+      sessionStorage.setItem('mottu_origem', JSON.stringify(origem));
+      const chaveVisita = `mottu_visita_${ref}`;
+      if (!sessionStorage.getItem(chaveVisita)) {
+        sessionStorage.setItem(chaveVisita, '1');
+        fetch(`/api/compartilhamentos/${ref}/visita`, { method: 'POST', keepalive: true }).catch(() => {});
+      }
+      window.history.replaceState(null, '', window.location.pathname);
+      return origem;
+    }
+    try {
+      return JSON.parse(sessionStorage.getItem('mottu_origem')) || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function gerarRef() {
+    const bytes = crypto.getRandomValues(new Uint8Array(10));
+    return Array.from(bytes, (b) => (b % 36).toString(36)).join('');
+  }
+
+  function linkCompartilhamento(ref) {
+    const params = new URLSearchParams({ ref, ...UTM_COMPARTILHAMENTO });
+    return `${window.location.origin}/?${params.toString()}`;
+  }
+
+  // Frase de até 140 caracteres (sem contar o link), personalizada com o preço da simulação.
+  function mensagemCompartilhamento(precoEstimado) {
+    const preco = Math.round(precoEstimado);
+    return `Simulei aqui: rodar com moto Mottu nas entregas sai uns R$ ${preco} por semana. E pra você, quanto daria? Leva 1 minuto 👇`;
+  }
 
   function getSessionId() {
     let id = sessionStorage.getItem('mottu_session_id');
@@ -92,6 +144,7 @@
     precoMax: document.getElementById('preco-max'),
     priceHandle: document.getElementById('price-handle'),
     btnContratar: document.getElementById('btn-contratar'),
+    btnCompartilharWhatsapp: document.getElementById('btn-compartilhar-whatsapp'),
   };
 
   function renderOptions(container, list, stateKey, onSelect, { tooltip = true } = {}) {
@@ -204,6 +257,7 @@
           dias: state.dias,
           km: state.km,
           protecao: state.protecao,
+          origem: state.origem,
         }),
       });
       if (!res.ok) throw new Error('Falha ao salvar respostas');
@@ -288,12 +342,38 @@
     window.open(MOTTU_URL, '_blank', 'noopener,noreferrer');
   });
 
+  els.btnCompartilharWhatsapp.addEventListener('click', () => {
+    if (!state.precos) return;
+    // Um ref por resultado: cliques repetidos reaproveitam o mesmo código.
+    if (!state.refCompartilhamento) state.refCompartilhamento = gerarRef();
+    const ref = state.refCompartilhamento;
+    const texto = `${mensagemCompartilhamento(state.precos.estimado)}\n\n${linkCompartilhamento(ref)}`;
+
+    // Abre o WhatsApp antes do fetch para não ser bloqueado como pop-up.
+    window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank', 'noopener,noreferrer');
+
+    fetch('/api/compartilhamentos', {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ref,
+        canal: 'whatsapp',
+        respostaId: state.respostaId,
+        sessionId: state.sessionId,
+        plano: planoNomePara(state.protecao, state.dias),
+        precoEstimado: state.precos.estimado,
+      }),
+    }).catch(() => {});
+  });
+
   els.btnSimularNovamente.addEventListener('click', () => {
     state.dias = null;
     state.km = null;
     state.protecao = null;
     state.respostaId = null;
     state.precos = null;
+    state.refCompartilhamento = null;
     els.btnContinuarQ1.disabled = true;
     els.btnContinuarQ2.disabled = true;
     els.btnVerResultado.disabled = true;
