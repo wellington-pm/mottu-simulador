@@ -132,6 +132,11 @@ h2 {
 
 .accent { color: var(--green); }
 
+/* Teste A/B da headline: controle aparece por padrão (inclusive sem JS) */
+.headline[data-headline="clareza"] { display: none; }
+html[data-variante-headline="clareza"] .headline[data-headline="controle"] { display: none; }
+html[data-variante-headline="clareza"] .headline[data-headline="clareza"] { display: inline; }
+
 .step-label {
   color: var(--text-muted);
   font-size: 0.8rem;

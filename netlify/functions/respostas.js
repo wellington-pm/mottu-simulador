@@ -4,6 +4,7 @@ const { DIAS_VALIDOS, KM_VALIDOS, PROTECAO_VALIDA, calcularPreco } = require('./
 
 const ADMIN_KEY = process.env.ADMIN_KEY || 'mottu-admin';
 const VARIANTES_CTA = ['garantir', 'reservar'];
+const VARIANTES_HEADLINE = ['controle', 'clareza'];
 const REF_REGEX = /^[a-z0-9]{6,16}$/;
 const texto = (v) => (typeof v === 'string' && v.length > 0 ? v.slice(0, 64) : null);
 
@@ -55,6 +56,7 @@ exports.handler = async (event) => {
         convertido: false,
         origem: normalizarOrigem(body.origem),
         varianteCta: VARIANTES_CTA.includes(body.varianteCta) ? body.varianteCta : null,
+        varianteHeadline: VARIANTES_HEADLINE.includes(body.varianteHeadline) ? body.varianteHeadline : null,
         criadoEm: new Date().toISOString(),
         atualizadoEm: null,
       });

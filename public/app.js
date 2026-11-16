@@ -87,6 +87,7 @@
     respostaId: null,
     precos: null,
     varianteCta: sortearVarianteCta(),
+    varianteHeadline: document.documentElement.getAttribute('data-variante-headline') || 'controle',
     origem: capturarOrigem(),
     refCompartilhamento: null,
   };
@@ -223,6 +224,21 @@
     });
   }
 
+  // Eventos do funil (home -> início). Deduplicados por sessão no servidor.
+  function registrarEvento(tipo) {
+    fetch('/api/eventos', {
+      method: 'POST',
+      keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo,
+        sessionId: state.sessionId,
+        varianteHeadline: state.varianteHeadline,
+        varianteCta: state.varianteCta,
+      }),
+    }).catch(() => {});
+  }
+
   function goTo(step) {
     state.step = step;
     STEPS.forEach((s) => {
@@ -284,6 +300,7 @@
           protecao: state.protecao,
           origem: state.origem,
           varianteCta: state.varianteCta,
+          varianteHeadline: state.varianteHeadline,
         }),
       });
       if (!res.ok) throw new Error('Falha ao salvar respostas');
@@ -325,6 +342,7 @@
   // --- eventos ---
 
   els.btnComecar.addEventListener('click', () => {
+    registrarEvento('inicio');
     renderOptions(els.opcoesDias, DIAS, 'dias', () => {
       els.btnContinuarQ1.disabled = !state.dias;
     });
@@ -415,4 +433,5 @@
   els.btnContratar.dataset.variante = state.varianteCta;
 
   goTo('home');
+  registrarEvento('visualizacao_home');
 })();

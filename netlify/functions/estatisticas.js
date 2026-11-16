@@ -32,6 +32,33 @@ function testeCta(registros) {
   }));
 }
 
+// Teste A/B da headline, por sessão: viu a home -> começou -> chegou ao resultado -> clicou no CTA.
+function testeHeadline(eventos, registros) {
+  const grupos = {};
+  const grupo = (v) => (grupos[v] = grupos[v] || { visualizacoes: new Set(), inicios: new Set(), resultados: new Set(), conversoes: new Set() });
+  eventos.forEach((e) => {
+    if (!e.varianteHeadline) return;
+    if (e.tipo === 'visualizacao_home') grupo(e.varianteHeadline).visualizacoes.add(e.sessionId);
+    if (e.tipo === 'inicio') grupo(e.varianteHeadline).inicios.add(e.sessionId);
+  });
+  registros.forEach((r) => {
+    if (!r.varianteHeadline) return;
+    grupo(r.varianteHeadline).resultados.add(r.sessionId);
+    if (r.convertido) grupo(r.varianteHeadline).conversoes.add(r.sessionId);
+  });
+  const pct = (a, b) => (b ? Number(((a / b) * 100).toFixed(2)) : 0);
+  return Object.entries(grupos).map(([variante, g]) => ({
+    variante,
+    visualizacoes: g.visualizacoes.size,
+    inicios: g.inicios.size,
+    resultados: g.resultados.size,
+    conversoes: g.conversoes.size,
+    taxaInicio: pct(g.inicios.size, g.visualizacoes.size),
+    taxaConclusao: pct(g.resultados.size, g.inicios.size),
+    taxaConversaoTotal: pct(g.conversoes.size, g.visualizacoes.size),
+  }));
+}
+
 exports.handler = async (event) => {
   const chave = event.queryStringParameters && event.queryStringParameters.key;
   if (chave !== ADMIN_KEY) {
@@ -46,6 +73,10 @@ exports.handler = async (event) => {
     const storeComp = getStore('compartilhamentos');
     const { blobs: blobsComp } = await storeComp.list();
     const compartilhamentos = await Promise.all(blobsComp.map((b) => storeComp.get(b.key, { type: 'json' })));
+    const storeEventos = getStore('eventos');
+    const { blobs: blobsEventos } = await storeEventos.list();
+    const eventos = await Promise.all(blobsEventos.map((b) => storeEventos.get(b.key, { type: 'json' })));
+
     const indicadas = registros.filter((r) => r.origem && r.origem.ref);
 
     return json(200, {
@@ -55,6 +86,7 @@ exports.handler = async (event) => {
       porKm: contarPor(registros, 'km'),
       porProtecao: contarPor(registros, 'protecao'),
       testeCta: testeCta(registros),
+      testeHeadline: testeHeadline(eventos, registros),
       compartilhamento: {
         compartilhamentos: compartilhamentos.length,
         visitas: compartilhamentos.reduce((soma, c) => soma + (c.visitas || 0), 0),

@@ -5,6 +5,18 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Mottu | Descubra o seu plano ideal</title>
 <link rel="stylesheet" href="styles.css" />
+<script>
+  // Teste A/B da headline: sorteia antes da renderização para não piscar o texto.
+  // Variante fixa por visitante (localStorage). QA: ?variante_headline=controle|clareza
+  (function () {
+    var V = ['controle', 'clareza'], k = 'mottu_variante_headline', v = null;
+    try { v = new URLSearchParams(location.search).get('variante_headline'); } catch (e) {}
+    if (V.indexOf(v) < 0) { try { v = localStorage.getItem(k); } catch (e) {} }
+    if (V.indexOf(v) < 0) { v = V[crypto.getRandomValues(new Uint8Array(1))[0] % V.length]; }
+    try { localStorage.setItem(k, v); } catch (e) {}
+    document.documentElement.setAttribute('data-variante-headline', v);
+  })();
+</script>
 </head>
 <body>
   <div class="app">
@@ -22,7 +34,10 @@
 
       <section class="step" data-step="home">
         <div class="hero-icon" aria-hidden="true">🛵</div>
-        <h1>Descubra o plano ideal para a sua <span class="accent">rotina de entregas</span></h1>
+        <h1>
+          <span class="headline" data-headline="controle">Descubra o plano ideal para a sua <span class="accent">rotina de entregas</span></span>
+          <span class="headline" data-headline="clareza">Aluguel de moto Mottu: <span class="accent">quanto custa pra sua rotina?</span></span>
+        </h1>
         <h2>Veja como é simples:</h2>
 		<ul class="checklist">
           <li><span class="check">1</span> Responda a 3 perguntas sobre quanto e onde você roda.</li>
