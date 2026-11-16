@@ -52,6 +52,30 @@
     },
   ];
 
+  // Teste A/B do CTA principal. Cada visitante recebe uma variante fixa (localStorage).
+  // Para QA, force com ?variante_cta=garantir ou ?variante_cta=reservar.
+  const VARIANTES_CTA = {
+    garantir: 'Garantir meu plano',
+    reservar: 'Reservar minha moto',
+  };
+
+  function sortearVarianteCta() {
+    const forcada = new URLSearchParams(window.location.search).get('variante_cta');
+    let variante = null;
+    try {
+      variante = localStorage.getItem('mottu_variante_cta');
+    } catch {}
+    if (forcada in VARIANTES_CTA) variante = forcada;
+    if (!(variante in VARIANTES_CTA)) {
+      const chaves = Object.keys(VARIANTES_CTA);
+      variante = chaves[crypto.getRandomValues(new Uint8Array(1))[0] % chaves.length];
+    }
+    try {
+      localStorage.setItem('mottu_variante_cta', variante);
+    } catch {}
+    return variante;
+  }
+
   const STEPS = ['home', 'q1', 'q2', 'q3', 'resultado'];
 
   const state = {
@@ -62,6 +86,7 @@
     sessionId: getSessionId(),
     respostaId: null,
     precos: null,
+    varianteCta: sortearVarianteCta(),
     origem: capturarOrigem(),
     refCompartilhamento: null,
   };
@@ -258,6 +283,7 @@
           km: state.km,
           protecao: state.protecao,
           origem: state.origem,
+          varianteCta: state.varianteCta,
         }),
       });
       if (!res.ok) throw new Error('Falha ao salvar respostas');
@@ -384,6 +410,9 @@
     const idx = STEPS.indexOf(state.step);
     if (idx > 0) goTo(STEPS[idx - 1]);
   });
+
+  els.btnContratar.textContent = VARIANTES_CTA[state.varianteCta];
+  els.btnContratar.dataset.variante = state.varianteCta;
 
   goTo('home');
 })();

@@ -3,6 +3,7 @@ const { getStore } = require('@netlify/blobs');
 const { DIAS_VALIDOS, KM_VALIDOS, PROTECAO_VALIDA, calcularPreco } = require('./lib/pricing');
 
 const ADMIN_KEY = process.env.ADMIN_KEY || 'mottu-admin';
+const VARIANTES_CTA = ['garantir', 'reservar'];
 const REF_REGEX = /^[a-z0-9]{6,16}$/;
 const texto = (v) => (typeof v === 'string' && v.length > 0 ? v.slice(0, 64) : null);
 
@@ -53,6 +54,7 @@ exports.handler = async (event) => {
         precoMax: preco.precoMax,
         convertido: false,
         origem: normalizarOrigem(body.origem),
+        varianteCta: VARIANTES_CTA.includes(body.varianteCta) ? body.varianteCta : null,
         criadoEm: new Date().toISOString(),
         atualizadoEm: null,
       });

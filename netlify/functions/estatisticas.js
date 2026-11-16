@@ -15,6 +15,23 @@ function contarPor(registros, campo) {
   return Object.entries(contagem).map(([valor, n]) => ({ [campo]: valor, n }));
 }
 
+// Teste A/B do CTA: exibições = respostas que chegaram ao resultado; conversões = cliques no CTA.
+function testeCta(registros) {
+  const grupos = {};
+  registros
+    .filter((r) => r.varianteCta)
+    .forEach((r) => {
+      const g = (grupos[r.varianteCta] = grupos[r.varianteCta] || { exibicoes: 0, conversoes: 0 });
+      g.exibicoes += 1;
+      if (r.convertido) g.conversoes += 1;
+    });
+  return Object.entries(grupos).map(([variante, g]) => ({
+    variante,
+    ...g,
+    taxaConversao: g.exibicoes ? Number(((g.conversoes / g.exibicoes) * 100).toFixed(2)) : 0,
+  }));
+}
+
 exports.handler = async (event) => {
   const chave = event.queryStringParameters && event.queryStringParameters.key;
   if (chave !== ADMIN_KEY) {
@@ -37,6 +54,7 @@ exports.handler = async (event) => {
       porDias: contarPor(registros, 'dias'),
       porKm: contarPor(registros, 'km'),
       porProtecao: contarPor(registros, 'protecao'),
+      testeCta: testeCta(registros),
       compartilhamento: {
         compartilhamentos: compartilhamentos.length,
         visitas: compartilhamentos.reduce((soma, c) => soma + (c.visitas || 0), 0),
